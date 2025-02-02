@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Викторина по всемирной истории</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 60%;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .question {
+            margin-bottom: 20px;
+        }
+        .answers {
+            list-style-type: none;
+            padding: 0;
+        }
+        .answers li {
+            margin: 10px 0;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #2e2e2e;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #000000;
+        }
+        #result {
+            display: none;
+            text-align: center;
+        }
+        .timer {
+            font-size: 20px;
+            text-align: center;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Викторина по всемирной истории</h1>
+
+    <!-- Таймер -->
+    <div class="timer" id="timer">Время: 10 секунд</div>
+
+    <div id="quiz">
+        <!-- Вопросы -->
+        <div class="question" id="question-container">
+            <!-- Вопросы будут загружаться динамически через JavaScript -->
+        </div>
+        
+        <button onclick="calculateScore()">Показать результат</button>
+    </div>
+
+    <div id="result">
+        <h2>Ваш результат</h2>
+        <p>Правильных ответов: <span id="score"></span> из 15</p>
+    </div>
+</div>
+
+<!-- Звуки -->
+<audio id="correct-sound" src="c:\Users\user\Desktop\ib project 2024-2025\web\npm\correct-6033.mp3" preload="auto"></audio>
+<audio id="incorrect-sound" src="c:\Users\user\Desktop\ib project 2024-2025\web\npm\wrong-38598.mp3" preload="auto"></audio>
+<audio id="time-up-sound" src="time-up.mp3" preload="auto"></audio>
+
+<script>
+    let currentQuestionIndex = 0;
+    let score = 0;
+    const questions = [
+        {
+            question: "1. Кто был первым императором Рима?",
+            options: ["Август", "Цезарь", "Калигула", "Нерон"],
+            correct: 0
+        },
+        {
+            question: "2. В каком году произошла Французская революция?",
+            options: ["1776", "1789", "1812", "1848"],
+            correct: 1
+        },
+        {
+            question: "3. Кто был первым президентом США?",
+            options: ["Джордж Вашингтон", "Авраам Линкольн", "Томас Джефферсон", "Бенджамин Франклин"],
+            correct: 0
+        },
+        {
+            question: "4. Какой народ первым создал письменность?",
+            options: ["Египтяне", "Месопотамцы", "Индийцы", "Греки"],
+            correct: 1
+        },
+        {
+            question: "5. Когда началась Первая мировая война?",
+            options: ["1914", "1912", "1905", "1918"],
+            correct: 0
+        },
+        {
+            question: "6. Кто написал «Капитал»?",
+            options: ["Фридрих Энгельс", "Карл Маркс", "Лев Толстой", "Владимир Ленин"],
+            correct: 1
+        },
+        {
+            question: "7. В каком году завершилась Вторая мировая война?",
+            options: ["1943", "1945", "1948", "1950"],
+            correct: 1
+        },
+        {
+            question: "8. Кто был основателем династии Монархов в России?",
+            options: ["Рюрик", "Петр I", "Иван Грозный", "Александр II"],
+            correct: 0
+        },
+        {
+            question: "9. Кто был первым царем объединенной России?",
+            options: ["Иван Грозный", "Петр Великий", "Александр III", "Николай II"],
+            correct: 0
+        },
+        {
+            question: "10. Когда была основана Великая Китайская стена?",
+            options: ["В 300 году до н. э.", "В 500 году до н. э.", "В 700 году н. э.", "В 900 году н. э."],
+            correct: 0
+        },
+        {
+            question: "11. Кто был вождем маоистской революции в Китае?",
+            options: ["Дэн Сяопин", "Мао Цзэдун", "Чжоу Эньлай", "Линь Бяо"],
+            correct: 1
+        },
+        {
+            question: "12. Кто был основателем Великой Империи Монголов?",
+            options: ["Чингисхан", "Тимур", "Кублай-хан", "Бату-хан"],
+            correct: 0
+        },
+        {
+            question: "13. Когда произошло падение Византийской империи?",
+            options: ["1453", "1492", "1054", "1204"],
+            correct: 0
+        },
+        {
+            question: "14. Как называлась страна, на территории которой располагалась древняя Спарта?",
+            options: ["Греция", "Рим", "Пелопоннес", "Македония"],
+            correct: 2
+        },
+        {
+            question: "15. Кто был первым человеком, ступившим на Луну?",
+            options: ["Юрий Гагарин", "Нил Армстронг", "Чарльз Линдберг", "Александр Белл"],
+            correct: 1
+        }
+    ];
+
+    function loadQuestion() {
+        const questionData = questions[currentQuestionIndex];
+        const questionHTML = `
+            <p>${questionData.question}</p>
+            <ul class="answers">
+                ${questionData.options.map((option, index) => `
+                    <li><input type="radio" name="q${currentQuestionIndex}" value="${index}"> ${option}</li>
+                `).join('')}
+            </ul>
+        `;
+        document.getElementById('question-container').innerHTML = questionHTML;
+        startTimer();
+    }
+
+    function startTimer() {
+        let timeLeft = 10;
+        const timerElement = document.getElementById('timer');
+        const timerInterval = setInterval(() => {
+            timerElement.textContent = `Время: ${timeLeft} секунд`;
+            timeLeft--;
+
+            if (timeLeft < 0) {
+                clearInterval(timerInterval);
+                document.getElementById("time-up-sound").play(); // Воспроизведение звука по окончании времени
+                nextQuestion();
+            }
+        }, 1000);
+    }
+
+    function nextQuestion() {
+        const selectedOption = document.querySelector(`input[name="q${currentQuestionIndex}"]:checked`);
+        if (selectedOption && parseInt(selectedOption.value) === questions[currentQuestionIndex].correct) {
+            score++;
+            document.getElementById("correct-sound").play(); // Воспроизведение звука для правильного ответа
+        } else if (selectedOption) {
+            document.getElementById("incorrect-sound").play(); // Воспроизведение звука для неправильного ответа
+        }
+
+        currentQuestionIndex++;
+
+        if (currentQuestionIndex < questions.length) {
+            loadQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById('quiz').style.display = 'none';
+        document.getElementById('result').style.display = 'block';
+        document.getElementById('score').textContent = score;
+    }
+
+    loadQuestion();
+</script>
+
+</body>
+</html>
